@@ -1,0 +1,102 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <title>2048</title>
+
+    <style>
+        canvas {
+            margin-top: 1%;
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            background-color: #8a867d;
+        }
+    </style>
+</head>
+<body style="background-color: #fcf6dc">
+    <h1 class="text-center">2048</h1>
+    <canvas id="gameboard" width="505" height="505"></canvas>
+    <script>
+        let board = [
+            { x: 20, y: 20, c: 0, r: 0 },
+            { x: 140, y: 20, c: 1, r: 0 },
+            { x: 260, y: 20, c: 2, r: 0 },
+            { x: 380, y: 20, c: 3, r: 0 },
+            { x: 20, y: 140, c: 0, r: 1 },
+            { x: 140, y: 140, c: 1, r: 1 },
+            { x: 260, y: 140, c: 2, r: 1 },
+            { x: 380, y: 140, c: 3, r: 1 },
+            { x: 20, y: 260, c: 0, r: 2 },
+            { x: 140, y: 260, c: 1, r: 2 },
+            { x: 260, y: 260, c: 2, r: 2 },
+            { x: 380, y: 260, c: 3, r: 2 },
+            { x: 20, y: 380, c: 0, r: 3 },
+            { x: 140, y: 380, c: 1, r: 3 },
+            { x: 260, y: 380, c: 2, r: 3 },
+            { x: 380, y: 380, c: 3, r: 3 }
+        ];
+        var grid;
+        // Gets the canvas element
+        const gameboard = document.getElementById("gameboard");
+        // Gets a 2-D drawing context
+        const ctx = gameboard.getContext("2d");
+        main();
+
+        function main() {
+            initBoard();
+        }
+
+        function initBoard() {
+            grid = [
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ];
+            var first = [genRandomNum(4), genRandomNum(4)];
+            var second = [genRandomNum(4), genRandomNum(4)];
+            while (JSON.stringify(first.sort()) == JSON.stringify(second.sort())) {
+                second = [genRandomNum(4), genRandomNum(4)];
+            }
+            grid[first[0]][first[1]] = genRandomNumWithProbs();
+            grid[second[0]][second[1]] = genRandomNumWithProbs();
+            drawBoard();
+        }
+
+        function genRandomNum(num) {
+            return Math.floor(Math.random() * num);
+        }
+
+        function genRandomNumWithProbs() {
+            var arr = [2, 2, 2, 2, 2, 2, 2, 2, 2, 4];
+            return arr[genRandomNum(arr.length)];
+        }
+
+        function drawBoard() {
+            board.forEach(drawCell);
+        }
+
+        function drawCell(cell) {
+            ctx.fillStyle = '#c7bbaf';
+            ctx.fillRect(cell.x, cell.y, 105, 105);
+            if (grid[cell.r][cell.c] !== 0) {
+                ctx.fillStyle = '#000000';
+                ctx.fillText(grid[cell.r][cell.c], 70 + (120 * cell.c), 70 + (120 * cell.r));
+            }
+        }
+
+        function move(event) {
+            const LEFT = [87, 37];
+            const RIGHT = [68, 39];
+            const UP = [87, 38];
+            const DOWN = [40, 68]
+        }
+    </script>
+</body>
+</html>
