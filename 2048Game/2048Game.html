@@ -36,6 +36,21 @@
             text-align: center;
             color: white;
         }
+        #overlay {
+            width: 505px;
+            height: 496px;
+            margin-left: auto;
+            margin-right: auto;
+            position: fixed;
+            display: none;
+            top: 57px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 2;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body style="background-color: #fcf6dc">
@@ -43,10 +58,11 @@
     <canvas id="gameboard" width="505" height="505"></canvas>
     <h2 class="text-center" id="score">Score: 0</h2>
     <br />
+    <div id="overlay">
+    </div>
     <div id="button">
         <button class="newGame" onclick="main()">New Game</button>
     </div>
-
     <script>
         var colourDict = {
             2: "#fff5fb",
@@ -95,6 +111,7 @@
         }
 
         function initBoard() {
+            document.getElementById("overlay").style.display = "none"
             score = 0
             document.getElementById('score').innerHTML = `Score: ${score}`;
             grid = [
@@ -148,122 +165,102 @@
             }
         }
 
+        function checkWin() {
+            grid.forEach(function (entry) {
+                if (entry.includes(2048)) {
+                    document.getElementById("overlay").style.display = "block";
+                }
+            });
+            return true;
+        }
+
         function checkGameOver() {
-            return;
+            for (let x = 1; x < 5; x++) {
+                if (x > 2) {
+                    grid = transpose();
+                }
+                for (let y = 0; y < 4; y++) {
+                    //grid.forEach(function (entry) {
+                    if (x == 2 || x == 4) {
+                        grid[y] = grid[y].reverse()
+                        //entry = entry.reverse();
+                    }
+                    if (grid[y].includes(0)) {
+                        if (x == 2 || x == 4) {
+                            grid[y] = grid[y].reverse();
+                        }
+                        return false;
+                    }
+                    for (let i = 0; i < grid[y].length - 1; i++) {
+                        if (grid[y][i] == grid[y][i + 1]) {
+                            if (x == 2 || x == 4) {
+                                grid[y] = grid[y].reverse();
+                            }
+                            return false;
+                        }
+                    }
+                    if (x == 2 || x == 4) {
+                        grid[y] = grid[y].reverse();
+                    }
+                }
+                //});
+                if (x > 2) {
+                    grid = transpose();
+                }
+            }
+            return true;
+        }
+
+        function move(dir) {
+            var counter = 0;
+            var reverseCheck = [68, 39, 40, 83];
+            var transposeCheck = [87, 38, 40, 83];
+            var changed = false;
+            if (transposeCheck.includes(dir)) {
+                grid = transpose();
+            }
+            grid.forEach(function (entry) {
+                if (reverseCheck.includes(dir)) {
+                    entry = entry.reverse();
+                }
+                var filtered = entry.filter(function (value, index, arr) {
+                    return value > 0;
+                });
+                for (let i = 0; i < filtered.length - 1; i++) {
+                    if (filtered[i] === filtered[i + 1]) {
+                        filtered[i] = filtered[i] * 2;
+                        score += filtered[i];
+                        document.getElementById('score').innerHTML = `Score: ${score}`;
+                        filtered.splice(i + 1, 1);
+                    }
+                }
+                while (filtered.length < 4) {
+                    filtered = filtered.concat([0]);
+                }
+                if (JSON.stringify(grid[counter]) !== JSON.stringify(filtered)) {
+                    changed = true;
+
+                }
+                if (reverseCheck.includes(dir)) {
+                    grid[counter] = filtered.reverse();
+                }
+                else {
+                    grid[counter] = filtered;
+                }
+                counter += 1;
+            });
+            if (transposeCheck.includes(dir)) {
+                grid = transpose();
+            }
+            return changed;
         }
 
         function getMove(event) {
-            const LEFT = [87, 37];
-            const RIGHT = [68, 39];
-            const UP = [87, 38];
-            const DOWN = [40, 68];
+            const KEYS = [87, 37, 68, 39, 65, 38, 40, 83];
             const keyPressed = event.keyCode;
-            if (LEFT.includes(keyPressed)) {
-                var counter = 0;
-                var changed = false;
-                grid.forEach(function (entry) {
-                    var filtered = entry.filter(function (value, index, arr) {
-                        return value > 0;
-                    });
-                    for (let i = 0; i < filtered.length - 1; i++) {
-                        if (filtered[i] === filtered[i + 1]) {
-                            filtered[i] = filtered[i] * 2
-                            score += filtered[i]
-                            document.getElementById('score').innerHTML = `Score: ${score}`;
-                            filtered.splice(i + 1, 1)
-                        }
-                    }
-                    while (filtered.length < 4) {
-                        filtered = filtered.concat([0]);
-                    }
-                    if (JSON.stringify(grid[counter]) !== JSON.stringify(filtered)) {
-                        changed = true;
-
-                    }
-                    grid[counter] = filtered;
-                    counter += 1
-                });
-            }
-            else if (RIGHT.includes(keyPressed)) {
-                var counter = 0
-                grid.forEach(function (entry) {
-                    entry = entry.reverse()
-                    var filtered = entry.filter(function (value, index, arr) {
-                        return value > 0;
-                    });
-                    for (let i = 0; i < filtered.length - 1; i++) {
-                        if (filtered[i] === filtered[i + 1]) {
-                            filtered[i] = filtered[i] * 2
-                            score += filtered[i]
-                            document.getElementById('score').innerHTML = `Score: ${score}`;
-                            filtered.splice(i + 1, 1)
-                        }
-                    }
-                    while (filtered.length < 4) {
-                        filtered = filtered.concat([0]);
-                    }
-                    if (JSON.stringify(grid[counter]) !== JSON.stringify(filtered)) {
-                        changed = true;
-
-                    }
-                    grid[counter] = filtered.reverse()
-                    counter += 1
-                });
-            }
-            else if (UP.includes(keyPressed)) {
-                grid = transpose()
-                var counter = 0
-                grid.forEach(function (entry) {
-                    var filtered = entry.filter(function (value, index, arr) {
-                        return value > 0;
-                    });
-                    for (let i = 0; i < filtered.length - 1; i++) {
-                        if (filtered[i] === filtered[i + 1]) {
-                            filtered[i] = filtered[i] * 2
-                            score += filtered[i]
-                            document.getElementById('score').innerHTML = `Score: ${score}`;
-                            filtered.splice(i + 1, 1)
-                        }
-                    }
-                    while (filtered.length < 4) {
-                        filtered = filtered.concat([0]);
-                    }
-                    if (JSON.stringify(grid[counter]) !== JSON.stringify(filtered)) {
-                        changed = true;
-
-                    }
-                    grid[counter] = filtered
-                    counter += 1
-                });
-                grid = transpose()
-            }
-            else if (DOWN.includes(keyPressed)) {
-                grid = transpose()
-                var counter = 0
-                grid.forEach(function (entry) {
-                    entry = entry.reverse()
-                    var filtered = entry.filter(function (value, index, arr) {
-                        return value > 0;
-                    });
-                    for (let i = 0; i < filtered.length - 1; i++) {
-                        if (filtered[i] === filtered[i + 1]) {
-                            filtered[i] = filtered[i] * 2
-                            score += filtered[i]
-                            document.getElementById('score').innerHTML = `Score: ${score}`;
-                            filtered.splice(i + 1, 1)
-                        }
-                    }
-                    while (filtered.length < 4) {
-                        filtered = filtered.concat([0]);
-                    }
-                    if (JSON.stringify(grid[counter]) !== JSON.stringify(filtered)) {
-                        changed = true;
-
-                    }
-                    grid[counter] = filtered.reverse()
-                    counter += 1
-                });
-                grid = transpose()
+            console.log(keyPressed)
+            if (KEYS.includes(keyPressed)) {
+                changed = move(keyPressed)
             }
             else {
                 return;
@@ -271,14 +268,16 @@
             if (changed) {
                 newNumPostMove();
                 drawBoard();
-                console.table(grid)
+                if (checkGameOver()) {
+                    document.getElementById("overlay").style.display = "block";
+                }
             }
         }
 
         function newNumPostMove() {
             var newNum = [genRandomNum(4), genRandomNum(4)];
             while (grid[newNum[0]][newNum[1]] !== 0) {
-                var newNum = [genRandomNum(4), genRandomNum(4)]
+                var newNum = [genRandomNum(4), genRandomNum(4)];
             }
             grid[newNum[0]][newNum[1]] = genRandomNumWithProbs();
         }
